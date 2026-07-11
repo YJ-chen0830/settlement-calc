@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>地層壓密沉陷量估算 | Settlement Calculation</title>
+<script src="https://yj-chen0830.github.io/jrh-core/jrh-core.js?v=3" defer></script>
+<style>
+  :root{--navy:#0b1f3a;--navy2:#13284a;--gold:#c9a14a;--gold2:#e0bf6e;--bg:#f5f3ee;--ink:#1c2530;--line:#d8d2c2;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Noto Sans TC","Segoe UI",sans-serif;background:var(--bg);color:var(--ink);}
+  header{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#f5f3ee;padding:28px 32px;}
+  header h1{margin:0;font-size:22px;}
+  header span{color:var(--gold2);font-size:13px;display:block;margin-top:4px;}
+  main{max-width:1060px;margin:0 auto;padding:28px 20px 60px;}
+  .grid{display:grid;grid-template-columns:340px 1fr;gap:24px;}
+  @media(max-width:820px){.grid{grid-template-columns:1fr;}}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px 24px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+  .card h2{font-size:14.5px;margin:0 0 18px;color:var(--navy);font-weight:700;display:flex;align-items:center;gap:8px;border-bottom:2px solid var(--gold);padding-bottom:10px;}
+  label{display:block;font-size:12px;color:#666;margin:10px 0 4px;font-weight:500;}
+  input{width:100%;padding:8px 11px;border:1.5px solid var(--line);border-radius:7px;font-size:13.5px;background:#fafaf8;}
+  input:focus{outline:none;border-color:var(--gold);}
+  .sec{font-size:12px;font-weight:700;color:var(--navy);margin:16px 0 6px;border-left:4px solid var(--gold);padding-left:9px;letter-spacing:.04em;text-transform:uppercase;}
+  .note{font-size:11.5px;color:#666;margin-top:12px;line-height:1.75;background:#f9f7f2;border-radius:6px;padding:9px 12px;}
+  button.calc-btn{margin-top:16px;width:100%;padding:12px;border:none;border-radius:8px;background:var(--navy);color:#fff;font-size:14.5px;font-weight:700;cursor:pointer;}
+  button.calc-btn:hover{background:var(--navy2);}
+  button.pro-btn{margin-top:12px;width:100%;padding:12px;border:none;border-radius:8px;background:var(--gold);color:var(--navy);font-size:14.5px;font-weight:700;cursor:pointer;}
+  button.pro-btn:hover{filter:brightness(1.08);}
+  table{width:100%;border-collapse:collapse;margin-top:10px;border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+  th{background:var(--navy);color:#f5f3ee;font-weight:600;font-size:12px;padding:9px 10px;text-align:left;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  td{padding:9px 10px;font-size:13px;border-bottom:1px solid var(--line);}
+  tr:nth-child(even) td{background:#f9f7f3;}
+  td:last-child{text-align:right;font-weight:700;}
+  details.proc{margin-top:16px;border:1px solid var(--line);border-radius:8px;background:#fafaf8;overflow:hidden;}
+  details.proc summary{cursor:pointer;padding:10px 14px;font-weight:700;font-size:13px;color:var(--navy);user-select:none;list-style:none;display:flex;align-items:center;gap:6px;}
+  details.proc summary::before{content:"▶";font-size:10px;transition:transform .2s;}
+  details[open].proc summary::before{transform:rotate(90deg);}
+  details.proc pre{margin:0;padding:12px 16px 16px;font-family:"Courier New",monospace;font-size:11.5px;line-height:1.9;white-space:pre-wrap;color:#2c3e50;border-top:1px solid var(--line);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .proj-section{background:#fff;border:1px solid var(--gold);border-radius:10px;padding:18px 22px;margin-bottom:20px;}
+  .proj-section h3{margin:0 0 12px;color:var(--navy);font-size:14px;font-weight:700;}
+  .proj-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .formula-lite{margin-top:16px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:#fcfbf8;font-size:12px;line-height:1.8;color:#425466;}
+  @media(max-width:600px){.proj-grid{grid-template-columns:1fr;}}
+  .mob-tabs{display:none;}
+  @media screen and (max-width:767px){
+    .mob-tabs{display:flex;background:var(--bg);border-bottom:2px solid var(--line);margin:0 -20px 0;padding:0 20px;}
+    .mob-tab{flex:1;padding:11px 4px;text-align:center;font-size:13.5px;font-weight:700;color:#888;cursor:pointer;background:transparent;border:none;border-bottom:3px solid transparent;}
+    .mob-tab.active{color:var(--navy);border-bottom-color:var(--gold);}
+    .grid{display:block;}
+    .grid>.card{display:none;}
+    .grid>.card.mob-active{display:block;}
+  }
+  @media print{
+    header,.no-print{display:none!important;}
+    body{background:#fff;margin:0;font-size:9pt;line-height:1.5;color:#111;}
+    main{padding:0;max-width:100%!important;}
+    .grid{grid-template-columns:1fr!important;gap:10pt!important;}
+    .card{box-shadow:none!important;border:1px solid #ccc!important;border-radius:4pt!important;padding:10pt 12pt!important;break-inside:avoid;}
+    .card h2{font-size:10.5pt!important;padding-bottom:6pt!important;margin-bottom:9pt!important;}
+    label{font-size:8pt!important;margin:6pt 0 2pt!important;}
+    .sec{font-size:8pt!important;margin:10pt 0 4pt!important;}
+    .note,.formula-lite{font-size:7.5pt!important;padding:6pt 9pt!important;}
+    table{border:1px solid #bbb!important;border-radius:0!important;margin-top:6pt!important;}
+    th{font-size:8pt!important;padding:5pt 7pt!important;background:#0b1f3a!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    td{font-size:8.5pt!important;padding:5pt 7pt!important;}
+    tr:nth-child(even) td{background:#f5f5f5!important;}
+    details.proc{display:block!important;margin-top:10pt!important;border:1pt solid #0b1f3a!important;border-radius:4pt!important;break-inside:avoid;background:#f9f9f6!important;}
+    details.proc>summary{display:none!important;}
+    details.proc::before{content:"📋  計算過程（供第三方檢核）";display:block;font-weight:700;font-size:8pt;color:#0b1f3a;padding:6pt 10pt 4pt;border-bottom:1px solid #ccc;letter-spacing:.04em;}
+    details.proc>pre{font-size:7pt!important;line-height:1.65!important;white-space:pre-wrap!important;padding:6pt 10pt 10pt!important;color:#1a1a1a!important;font-family:"Courier New",monospace!important;}
+    .proj-section{border:1.5pt solid #0b1f3a!important;border-radius:4pt!important;}
+    button.pro-btn,button.calc-btn{display:none!important;}
+    @page{margin:15mm 12mm;size:A4;}
+  }
+</style>
+</head>
+<body data-tool="stl">
+<header>
+  <a href="https://yj-chen0830.github.io/engineering-hub/" style="color:var(--gold2);font-size:12.5px;text-decoration:none;display:inline-block;margin-bottom:8px;">← 返回工程計算中心</a>
+  <h1>地層壓密沉陷量估算</h1>
+  <span>即時沉陷（彈性）+ 一次壓密沉陷 · 2:1 應力分布法</span>
+</header>
+<main>
+
+<div class="proj-section no-print" id="projSection">
+  <h3>📁 專案資訊（列印時帶入計算書封面）</h3>
+  <div class="proj-grid">
+    <div><label>工程名稱</label><input id="pj-name" placeholder="○○工程"></div>
+    <div><label>工程地點</label><input id="pj-loc" placeholder="○○市○○區"></div>
+    <div><label>承造廠商</label><input id="pj-contractor" placeholder="○○營造股份有限公司"></div>
+    <div><label>文件編號</label><input id="pj-docno" placeholder="STL-CAL-001"></div>
+    <div><label>計算者</label><input id="pj-calc" placeholder="姓名"></div>
+    <div><label>審核者</label><input id="pj-review" placeholder="姓名"></div>
+    <div><label>計算日期</label><input id="pj-date" type="date"></div>
+  </div>
+</div>
+
+<div class="mob-tabs">
+  <button class="mob-tab active" onclick="switchMobTab('stl-in',this)">📋 輸入參數</button>
+  <button class="mob-tab" id="mobTab-stl-r" onclick="switchMobTab('stl-r',this)">📊 計算結果</button>
+</div>
+<div class="grid">
+  <div class="card mob-active" data-tab="stl-in">
+    <h2>輸入參數</h2>
+    <div class="sec">基礎與載重</div>
+    <div class="row2">
+      <div><label>基礎寬度 B (m)</label><input id="stl-B" type="number" value="3" step="0.1"></div>
+      <div><label>基礎長度 L (m)</label><input id="stl-L" type="number" value="3" step="0.1"></div>
+    </div>
+    <label>基礎底面淨附加壓力 Δp (kPa)</label><input id="stl-dp" type="number" value="150" step="1">
+    <div class="sec">黏土層參數</div>
+    <div class="row2">
+      <div><label>基礎底面至黏土層頂深度 z1 (m)</label><input id="stl-z1" type="number" value="2" step="0.1"></div>
+      <div><label>黏土層厚度 H (m)</label><input id="stl-H" type="number" value="4" step="0.1"></div>
+    </div>
+    <div class="row2">
+      <div><label>初始孔隙比 e0</label><input id="stl-e0" type="number" value="0.9" step="0.01"></div>
+      <div><label>壓縮指數 Cc</label><input id="stl-Cc" type="number" value="0.3" step="0.01"></div>
+    </div>
+    <div class="row2">
+      <div><label>回彈指數 Cr</label><input id="stl-Cr" type="number" value="0.05" step="0.01"></div>
+      <div><label>彈性模數 Es (kPa)</label><input id="stl-Es" type="number" value="20000" step="100"></div>
+    </div>
+    <div class="sec">應力條件</div>
+    <div class="row2">
+      <div><label>中點有效覆土應力 σ'0 (kPa)</label><input id="stl-sigma0" type="number" value="80" step="1"></div>
+      <div><label>中點預壓密應力 σ'p (kPa)</label><input id="stl-sigmap" type="number" value="80" step="1"></div>
+    </div>
+    <button class="calc-btn" onclick="calcSTL()">計算地層壓密沉陷量估算</button>
+    <div class="formula-lite">即時沉陷簡化公式：Si = Δp × B × (1 - 0.3²) / Es。壓密沉陷採 Das 教科書常用之 2:1 應力分布法與 NC/OC 三分支判斷。</div>
+    <div class="note">本工具採用 2:1 應力分布法簡化估算，未考慮土層分層變化、地下水位變動、次壓縮沉陷等因素，僅供初步評估，正式設計應由大地工程師依實際地質調查資料複核。</div>
+  </div>
+  <div class="card" data-tab="stl-r">
+    <h2>計算結果</h2>
+    <div id="stl-result"><p style="color:#888">尚未計算</p></div>
+    <details class="proc" id="stl-proc" style="display:none">
+      <summary>📋 計算過程（供第三方檢核）</summary>
+      <pre id="stl-proc-text"></pre>
+    </details>
+    <button class="pro-btn no-print" onclick="openPro()">📄 產出計算書 PDF</button>
+  </div>
+</div>
+
+</main>
+<script>
+function switchMobTab(name,btn){
+  btn.parentElement.querySelectorAll('.mob-tab').forEach(function(t){t.classList.remove('active');});
+  btn.classList.add('active');
+  btn.parentElement.nextElementSibling.querySelectorAll('.card').forEach(function(c){
+    c.classList.toggle('mob-active',c.dataset.tab===name);
+  });
+}
+function openPro(){ JRH.checkEmail(function(){ jrhPrint('地層壓密沉陷量估算計算書'); }); }
+function v(id){return parseFloat(document.getElementById(id).value)||0;}
+function f2(x){return x.toFixed(2);}
+function f3(x){return x.toFixed(3);}
+function f6(x){return x.toFixed(6);}
+function log10(x){return Math.log(x)/Math.LN10;}
+
+function calcSettlement(inputs){
+  var B=inputs.B, L=inputs.L, dp=inputs.dp, z1=inputs.z1, H=inputs.H;
+  var e0=inputs.e0, Cc=inputs.Cc, Cr=inputs.Cr, sigma0=inputs.sigma0, sigmap=inputs.sigmap, Es=inputs.Es;
+  var z=z1 + H/2;
+  var dsigma=dp * (B * L) / ((B + z) * (L + z));
+  var branch='', branchReason='', scM=0;
+  if(sigmap <= sigma0){
+    branch='NC';
+    branchReason='因 σ\'p ≤ σ\'0，視為正常壓密土層，壓力歷程未顯示過壓密行為，故全段採 Cc 計算。';
+    scM=(Cc * H) / (1 + e0) * log10((sigma0 + dsigma) / sigma0);
+  }else if((sigma0 + dsigma) <= sigmap){
+    branch='OC-RECOMP';
+    branchReason='因 σ\'p > σ\'0，且作用後應力 σ\'0+Δσ 未超過 σ\'p，僅發生再壓密，故採 Cr 計算。';
+    scM=(Cr * H) / (1 + e0) * log10((sigma0 + dsigma) / sigma0);
+  }else{
+    branch='OC-VIRGIN';
+    branchReason='因 σ\'p > σ\'0，但作用後應力 σ\'0+Δσ 已超過 σ\'p，故先以 Cr 計至 σ\'p，再以 Cc 計算超過預壓密應力後之原始壓密。';
+    scM=(Cr * H) / (1 + e0) * log10(sigmap / sigma0) + (Cc * H) / (1 + e0) * log10((sigma0 + dsigma) / sigmap);
+  }
+  var siM=dp * B * (1 - 0.3 * 0.3) / Es;
+  var totalM=scM + siM;
+  return {
+    z:z,
+    dsigma:dsigma,
+    branch:branch,
+    branchReason:branchReason,
+    Sc_m:scM,
+    Sc_mm:scM * 1000,
+    Si_m:siM,
+    Si_mm:siM * 1000,
+    total_m:totalM,
+    total_mm:totalM * 1000
+  };
+}
+
+function calcSTL(){
+  var inputs={
+    B:v('stl-B'),
+    L:v('stl-L'),
+    dp:v('stl-dp'),
+    z1:v('stl-z1'),
+    H:v('stl-H'),
+    e0:v('stl-e0'),
+    Cc:v('stl-Cc'),
+    Cr:v('stl-Cr'),
+    sigma0:v('stl-sigma0'),
+    sigmap:v('stl-sigmap'),
+    Es:v('stl-Es')
+  };
+  var r=calcSettlement(inputs);
+  var branchLabelMap={
+    'NC':'正常壓密 NC',
+    'OC-RECOMP':'過壓密 OC（未超過預壓密應力）',
+    'OC-VIRGIN':'過壓密 OC（超過預壓密應力）'
+  };
+
+  document.getElementById('stl-result').innerHTML =
+    '<table><tr><th>項目</th><th>數值</th></tr>'+
+    '<tr><td>黏土層中點深度 z</td><td>'+f2(r.z)+' m</td></tr>'+
+    '<tr><td>中點附加應力 Δσ</td><td>'+f2(r.dsigma)+' kPa</td></tr>'+
+    '<tr><td>一次壓密沉陷 Sc</td><td>'+f2(r.Sc_mm)+' mm</td></tr>'+
+    '<tr><td>即時沉陷 Si</td><td>'+f2(r.Si_mm)+' mm</td></tr>'+
+    '<tr><td>總沉陷 Sc + Si</td><td>'+f2(r.total_mm)+' mm</td></tr>'+
+    '<tr><td>壓密判定</td><td>'+branchLabelMap[r.branch]+'</td></tr>'+
+    '</table>'+
+    '<div class="note">Sc 以公尺計算後轉為 mm 顯示；Si 依簡化彈性法估算，未考慮形狀係數與分層剛度差異。</div>';
+
+  var p='';
+  p+='【地層壓密沉陷量估算計算過程】\n\n';
+  p+='一、輸入條件\n';
+  p+='  基礎寬度 B = '+f3(inputs.B)+' m\n';
+  p+='  基礎長度 L = '+f3(inputs.L)+' m\n';
+  p+='  基礎底面淨附加壓力 Δp = '+f3(inputs.dp)+' kPa\n';
+  p+='  基礎底面至黏土層頂深度 z1 = '+f3(inputs.z1)+' m\n';
+  p+='  黏土層厚度 H = '+f3(inputs.H)+' m\n';
+  p+='  初始孔隙比 e0 = '+f3(inputs.e0)+'\n';
+  p+='  壓縮指數 Cc = '+f3(inputs.Cc)+'\n';
+  p+='  回彈指數 Cr = '+f3(inputs.Cr)+'\n';
+  p+='  中點有效覆土應力 σ\'0 = '+f3(inputs.sigma0)+' kPa\n';
+  p+='  中點預壓密應力 σ\'p = '+f3(inputs.sigmap)+' kPa\n';
+  p+='  彈性模數 Es = '+f3(inputs.Es)+' kPa\n\n';
+  p+='二、黏土層中點深度\n';
+  p+='  z = z1 + H/2 = '+f3(inputs.z1)+' + '+f3(inputs.H)+'/2 = '+f6(r.z)+' m\n\n';
+  p+='三、附加應力（2:1 應力分布法）\n';
+  p+='  Δσ = Δp × (B×L) / ((B+z)×(L+z))\n';
+  p+='     = '+f3(inputs.dp)+' × ('+f3(inputs.B)+'×'+f3(inputs.L)+') / (('+f3(inputs.B)+'+'+f6(r.z)+')×('+f3(inputs.L)+'+'+f6(r.z)+'))\n';
+  p+='     = '+f6(r.dsigma)+' kPa\n\n';
+  p+='四、一次壓密沉陷 Sc 判定\n';
+  p+='  判定結果：'+branchLabelMap[r.branch]+'\n';
+  p+='  判定理由：'+r.branchReason+'\n';
+  if(r.branch==='NC'){
+    p+='  Sc = (Cc×H)/(1+e0) × log10((σ\'0+Δσ)/σ\'0)\n';
+    p+='     = ('+f3(inputs.Cc)+'×'+f3(inputs.H)+')/(1+'+f3(inputs.e0)+') × log10(('+f3(inputs.sigma0)+'+'+f6(r.dsigma)+')/'+f3(inputs.sigma0)+')\n';
+    p+='     = '+f6(r.Sc_m)+' m = '+f3(r.Sc_mm)+' mm\n\n';
+  }else if(r.branch==='OC-RECOMP'){
+    p+='  Sc = (Cr×H)/(1+e0) × log10((σ\'0+Δσ)/σ\'0)\n';
+    p+='     = ('+f3(inputs.Cr)+'×'+f3(inputs.H)+')/(1+'+f3(inputs.e0)+') × log10(('+f3(inputs.sigma0)+'+'+f6(r.dsigma)+')/'+f3(inputs.sigma0)+')\n';
+    p+='     = '+f6(r.Sc_m)+' m = '+f3(r.Sc_mm)+' mm\n\n';
+  }else{
+    p+='  Sc = (Cr×H)/(1+e0) × log10(σ\'p/σ\'0) + (Cc×H)/(1+e0) × log10((σ\'0+Δσ)/σ\'p)\n';
+    p+='     = ('+f3(inputs.Cr)+'×'+f3(inputs.H)+')/(1+'+f3(inputs.e0)+') × log10('+f3(inputs.sigmap)+'/'+f3(inputs.sigma0)+')\n';
+    p+='       + ('+f3(inputs.Cc)+'×'+f3(inputs.H)+')/(1+'+f3(inputs.e0)+') × log10(('+f3(inputs.sigma0)+'+'+f6(r.dsigma)+')/'+f3(inputs.sigmap)+')\n';
+    p+='     = '+f6(r.Sc_m)+' m = '+f3(r.Sc_mm)+' mm\n\n';
+  }
+  p+='五、即時沉陷 Si（簡化彈性法）\n';
+  p+='  Si = Δp × B × (1 - 0.3²) / Es\n';
+  p+='     = '+f3(inputs.dp)+' × '+f3(inputs.B)+' × (1 - 0.3²) / '+f3(inputs.Es)+'\n';
+  p+='     = '+f6(r.Si_m)+' m = '+f3(r.Si_mm)+' mm\n\n';
+  p+='六、總沉陷\n';
+  p+='  St = Sc + Si = '+f6(r.Sc_m)+' + '+f6(r.Si_m)+' = '+f6(r.total_m)+' m\n';
+  p+='     = '+f3(r.total_mm)+' mm\n\n';
+  p+='七、說明\n';
+  p+='  本工具以單一黏土層中點應力增量代表全層壓密效應，適用於初步估算。\n';
+  p+='  若為分層土層、地下水位變動或需評估次壓縮沉陷者，應另行分層分析。\n';
+  document.getElementById('stl-proc-text').textContent=p;
+  document.getElementById('stl-proc').style.display='';
+  if(window.innerWidth<768){var b=document.getElementById('mobTab-stl-r');if(b)switchMobTab('stl-r',b);}
+  return r;
+}
+
+window.addEventListener('DOMContentLoaded',function(){ calcSTL(); });
+</script>
+<script>
+window.jrhDocMeta={
+ "doc": "地層壓密沉陷量估算計算書",
+ "codes": [
+  "Das, Principles of Geotechnical Engineering",
+  "建築物基礎構造設計規範"
+ ],
+ "notes": [
+  "本計算採用 2:1 應力分布法估算附加應力，適用於初步設計評估",
+  "壓密沉陷需配合時間-沉陷率(Tv)分析評估達到設計沉陷比例所需時間，本工具未包含此部分",
+  "本計算書應經大地工程技師簽證後，始得作為正式送審文件。"
+ ]
+};
+</script>
+</body>
+</html>
