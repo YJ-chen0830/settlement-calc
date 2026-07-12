@@ -279,6 +279,14 @@ function calcSTL(){
 }
 
 window.addEventListener('DOMContentLoaded',function(){ calcSTL(); });
+window.addEventListener('DOMContentLoaded',function(){
+  if(!(window.JRH && JRH.showInboundBanner))return;
+  JRH.showInboundBanner('pgs','基樁群樁效率與沉陷',function(data){
+    document.getElementById('stl-B').value=(data.Bg_mm/1000).toFixed(2);
+    document.getElementById('stl-L').value=(data.Lg_mm/1000).toFixed(2);
+    calcSTL();
+  });
+});
 </script>
 <script>
 window.jrhDocMeta={
